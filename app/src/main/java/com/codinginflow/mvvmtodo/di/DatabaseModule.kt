@@ -2,6 +2,7 @@ package com.codinginflow.mvvmtodo.di
 
 import android.content.Context
 import androidx.room.Room
+import com.codinginflow.mvvmtodo.data.TaskDao
 import com.codinginflow.mvvmtodo.data.TaskDatabase
 import dagger.Module
 import dagger.Provides
@@ -18,14 +19,14 @@ import javax.inject.Singleton
 object DatabaseModule {
 
     @Provides
-    fun provideTaskDao(taskDatabase: TaskDatabase){
-        taskDatabase.taskDao()
+    fun provideTaskDao(taskDatabase: TaskDatabase): TaskDao{
+        return taskDatabase.taskDao()
     }
 
     @Singleton
     @Provides
-    fun provideTaskDatabase(@ApplicationContext context: Context, callback: TaskDatabase.Callback){
-        Room.databaseBuilder(context,TaskDatabase::class.java, "task_database")
+    fun provideTaskDatabase(@ApplicationContext context: Context, callback: TaskDatabase.Callback): TaskDatabase{
+        return Room.databaseBuilder(context,TaskDatabase::class.java, "task_database")
             .addCallback(callback)
             .build()
     }
