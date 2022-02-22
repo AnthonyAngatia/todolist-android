@@ -42,26 +42,25 @@ class TasksFragment: Fragment(R.layout.fragment_tasks) {
 
         val searchItem = menu.findItem(R.id.action_search)
         val searchView = searchItem.actionView as SearchView
-
 //        searchView.setOnQueryTextListener()
         searchView.onQueryTextChanged{
             viewModel.searchQuery.value = it
         }
-
-
-
 
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when(item.itemId){
             R.id.action_sort_by_name->{
+                viewModel.sortOrder.value = SortOrder.BY_NAME
                 true
             }
             R.id.action_sort_by_date_created->{
+                viewModel.sortOrder.value = SortOrder.BY_DATE
                 true
             }
             R.id.action_hide_completed_tasks->{
+                viewModel.hideCompleted.value = true
                 true
             }
             R.id.action_delete_all_completed_tasks->{
