@@ -16,7 +16,9 @@ import com.codinginflow.mvvmtodo.data.SortOrder
 import com.codinginflow.mvvmtodo.data.Task
 import com.codinginflow.mvvmtodo.databinding.FragmentTasksBinding
 import com.codinginflow.mvvmtodo.util.onQueryTextChanged
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -57,6 +59,20 @@ class TasksFragment: Fragment(R.layout.fragment_tasks), TasksAdapter.OnItemClick
         viewModel.tasks.observe(viewLifecycleOwner, {
             taskAdapter.submitList(it)
         })
+        //TODO:Understand why we need to use channel. Alternatively you can observe a state and see some of its weaknesses e.g when rotating a screen
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.taskEvent.collect {event->
+                when(event){
+                    is TasksViewModel.TaskEvent.ShowUndoDeleteTaskMessage ->{
+                        Snackbar.make(requireView(), "Task deleted", Snackbar.LENGTH_LONG)
+                            .setAction("UNDO"){
+                                viewModel.onUndoDeleteClick(event.task)
+                            }.show()
+                    }
+                }
+
+            }
+        }
         setHasOptionsMenu(true)
     }
 

@@ -8,10 +8,8 @@ import com.codinginflow.mvvmtodo.data.SortOrder
 import com.codinginflow.mvvmtodo.data.Task
 import com.codinginflow.mvvmtodo.data.TaskDao
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,6 +18,9 @@ class TasksViewModel  @Inject constructor(
     private val taskDao: TaskDao,
     private val preferenceManager: PreferenceManager
 ) : ViewModel() {
+
+    private val taskEventChannel = Channel<TaskEvent>()
+    val taskEvent:Flow<TaskEvent> = taskEventChannel.receiveAsFlow()
 
     val searchQuery = MutableStateFlow("")
 //    val sortOrder = MutableStateFlow(SortOrder.BY_DATE)
@@ -53,6 +54,15 @@ class TasksViewModel  @Inject constructor(
 
     fun onTaskSwiped(task: Task) = viewModelScope.launch {
         taskDao.delete(task)
+        taskEventChannel.send(TaskEvent.ShowUndoDeleteTaskMessage(task))
+    }
+
+    fun onUndoDeleteClick(task: Task) = viewModelScope.launch {
+        taskDao.insert(task)
+    }
+
+    sealed class TaskEvent{
+        data class ShowUndoDeleteTaskMessage(val task: Task): TaskEvent()
     }
 
 }
