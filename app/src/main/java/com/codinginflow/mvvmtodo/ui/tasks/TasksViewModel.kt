@@ -42,5 +42,18 @@ class TasksViewModel  @Inject constructor(
         preferenceManager.updateHideCompleted(hideCompleted)
     }
 
+    fun onTaskCheckedChange(task: Task, checked: Boolean) = viewModelScope.launch {
+        taskDao.update(task.copy(completed = checked))
+    }
+
+    fun onTaskSelected(task: Task) {
+        TODO("Not yet implemented")
+
+    }
+
+    fun onTaskSwiped(task: Task) = viewModelScope.launch {
+        taskDao.delete(task)
+    }
+
 }
 
