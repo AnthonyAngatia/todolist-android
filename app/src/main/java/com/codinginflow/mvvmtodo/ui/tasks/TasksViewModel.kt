@@ -1,12 +1,12 @@
 package com.codinginflow.mvvmtodo.ui.tasks
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.codinginflow.mvvmtodo.data.PreferenceManager
 import com.codinginflow.mvvmtodo.data.SortOrder
 import com.codinginflow.mvvmtodo.data.Task
 import com.codinginflow.mvvmtodo.data.TaskDao
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -16,19 +16,20 @@ import javax.inject.Inject
 @HiltViewModel
 class TasksViewModel  @Inject constructor(
     private val taskDao: TaskDao,
-    private val preferenceManager: PreferenceManager
+    private val preferenceManager: PreferenceManager,
+    private val state:SavedStateHandle //Can work withou the assisted annotation in the other viewmodel
 ) : ViewModel() {
 
     private val taskEventChannel = Channel<TaskEvent>()
     val taskEvent:Flow<TaskEvent> = taskEventChannel.receiveAsFlow()
 
-    val searchQuery = MutableStateFlow("")
+    val searchQuery = state.getLiveData("searchQuery", "")
 //    val sortOrder = MutableStateFlow(SortOrder.BY_DATE)
 //    val hideCompleted = MutableStateFlow(false)
     val preferenceFlow = preferenceManager.preferenceFlow
 
     private val tasksFlow: Flow<List<Task>> =
-        combine(searchQuery, preferenceFlow)
+        combine(searchQuery.asFlow(), preferenceFlow)
         { query, preferenceFlow ->
         Pair(query, preferenceFlow)
     }.flatMapLatest {(query, preferenceFlow)->
@@ -47,9 +48,8 @@ class TasksViewModel  @Inject constructor(
         taskDao.update(task.copy(completed = checked))
     }
 
-    fun onTaskSelected(task: Task) {
-        TODO("Not yet implemented")
-
+    fun onTaskSelected(task: Task) =viewModelScope.launch{
+        taskEventChannel.send(TaskEvent.NavigateToEditTaskScreen(task))
     }
 
     fun onTaskSwiped(task: Task) = viewModelScope.launch {
@@ -61,7 +61,13 @@ class TasksViewModel  @Inject constructor(
         taskDao.insert(task)
     }
 
+    fun onAddNewTestClick() = viewModelScope.launch {
+        taskEventChannel.send(TaskEvent.NavigateToAddScreen)
+    }
+
     sealed class TaskEvent{
+        object NavigateToAddScreen: TaskEvent()
+        data class NavigateToEditTaskScreen(val task: Task): TaskEvent()
         data class ShowUndoDeleteTaskMessage(val task: Task): TaskEvent()
     }
 

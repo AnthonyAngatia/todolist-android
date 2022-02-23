@@ -1,11 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/tasksFragment">
 
     <fragment
         android:id="@+id/tasksFragment"
         android:name="com.codinginflow.mvvmtodo.ui.tasks.TasksFragment"
-        android:label="TasksFragment" />
+        android:label="Tasks">
+        <action
+            android:id="@+id/action_tasksFragment_to_addEditFragment"
+            app:destination="@id/addEditFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/addEditFragment"
+        android:name="com.codinginflow.mvvmtodo.ui.addedittask.AddEditFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_add_edit_task" >
+        <argument
+            android:name="task"
+            app:argType="com.codinginflow.mvvmtodo.data.Task"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+    </fragment>
 </navigation>

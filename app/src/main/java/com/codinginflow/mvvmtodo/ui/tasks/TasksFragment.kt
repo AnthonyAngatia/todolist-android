@@ -9,12 +9,14 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.codinginflow.mvvmtodo.R
 import com.codinginflow.mvvmtodo.data.SortOrder
 import com.codinginflow.mvvmtodo.data.Task
 import com.codinginflow.mvvmtodo.databinding.FragmentTasksBinding
+import com.codinginflow.mvvmtodo.util.exhaustive
 import com.codinginflow.mvvmtodo.util.onQueryTextChanged
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -54,11 +56,15 @@ class TasksFragment: Fragment(R.layout.fragment_tasks), TasksAdapter.OnItemClick
                 }
 
             }).attachToRecyclerView(recyclerViewTasks)
+
+            fabAddTask.setOnClickListener {
+                viewModel.onAddNewTestClick()
+            }
         }
 
-        viewModel.tasks.observe(viewLifecycleOwner, {
+        viewModel.tasks.observe(viewLifecycleOwner) {
             taskAdapter.submitList(it)
-        })
+        }
         //TODO:Understand why we need to use channel. Alternatively you can observe a state and see some of its weaknesses e.g when rotating a screen
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.taskEvent.collect {event->
@@ -69,7 +75,17 @@ class TasksFragment: Fragment(R.layout.fragment_tasks), TasksAdapter.OnItemClick
                                 viewModel.onUndoDeleteClick(event.task)
                             }.show()
                     }
-                }
+                    is TasksViewModel.TaskEvent.NavigateToAddScreen -> {
+                        val action = TasksFragmentDirections.actionTasksFragmentToAddEditFragment(title="New Task")
+                        findNavController().navigate(action)
+                        //Another alternative to this would be below but this wont provide us null aftry
+//                        findNavController().navigate(R.layout.fragment_addedit...)
+                    }
+                    is TasksViewModel.TaskEvent.NavigateToEditTaskScreen -> {
+                        val action = TasksFragmentDirections.actionTasksFragmentToAddEditFragment(task = event.task, title="Edit Task")
+                        findNavController().navigate(action)
+                    }
+                }.exhaustive
 
             }
         }
