@@ -13,3 +13,6 @@ The App is and android application that provides its users to add, update and de
 - Communicating events through `Channel` class Kotlin
 - `sealed class` and `enum class` use cases
 - Menu Item with embedded Search View
+
+# Credits
+This code is from an android course/tutorial by [Coding in Flow](https://www.youtube.com/channel/UC_Fh8kvtkVPkeihBs42jGcA)
